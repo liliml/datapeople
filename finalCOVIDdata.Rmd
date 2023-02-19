@@ -10,117 +10,152 @@ author: "Data People"
 date: "`r Sys.Date()`"
 output: html_document
 ---
-
 ### What trends do you notice with respect to the total inpatient beds for COVID by specific age groups and time? 
-```{r}
+```{r, message = FALSE}
+# loading libraries and reading the data
 library(tidyverse)
 fullData <- read_delim("COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_Facility.csv")
-head(fullData)
+# Below a table of the first few rows of the full data frame of all the data called fullData is shown (note that not all columns are shown here)
+knitr::kable(head(fullData))
 
-#smaller data set below with only 10000 rows
+# size10000 - smaller data set of only 10000 rows 
 size10000 <- sample_n(fullData, 10000)
-head(size10000)
+# Below a table of the first few rows of the data frame called size10000 is shown (note that not
+# all columns are shown here)
+knitr::kable(head(size10000))
 
-final <- size10000 %>% 
-  filter(total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg >= 0 & total_adult_patients_hospitalized_confirmed_covid_7_day_avg >= 0 & inpatient_beds_used_covid_7_day_avg >= 0 & 
-total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum >= 0 & total_adult_patients_hospitalized_confirmed_covid_7_day_sum >= 0 & inpatient_beds_used_covid_7_day_sum >= 0) %>% 
+# final - the full dataset with any averages and sums of inpatient beds 
+# with values less then 4 replace with a value of 2. The data is also arranged by date (collection week)
+# and is shown from oldest ot newest week
+final <- fullData %>%
+  # -999,999.0 is any average or sum value that is 4 or less. The mutated columns below replace any value of -999999.0 as 2 since 2 is the average between 0 and 4, and will better represent the data then replacing -999,999.0 with 0
+  mutate(total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg = replace(total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg, total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg == -999999.0, 2.0)) %>% 
+  mutate(total_adult_patients_hospitalized_confirmed_covid_7_day_avg = replace(total_adult_patients_hospitalized_confirmed_covid_7_day_avg, total_adult_patients_hospitalized_confirmed_covid_7_day_avg == -999999.0, 2.0)) %>% 
+  mutate(inpatient_beds_used_covid_7_day_avg = replace(inpatient_beds_used_covid_7_day_avg, inpatient_beds_used_covid_7_day_avg == -999999.0, 2.0)) %>% 
+    mutate(total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum = replace(total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum, total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum == -999999.0, 2.0)) %>% 
+  mutate(total_adult_patients_hospitalized_confirmed_covid_7_day_sum = replace(total_adult_patients_hospitalized_confirmed_covid_7_day_sum, total_adult_patients_hospitalized_confirmed_covid_7_day_sum == -999999.0, 2.0)) %>% 
+  mutate(inpatient_beds_used_covid_7_day_sum = replace(inpatient_beds_used_covid_7_day_sum, inpatient_beds_used_covid_7_day_sum == -999999.0, 2.0)) %>% 
   select(collection_week, hospital_subtype, state, city, 
 total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage, total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum, total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg,     
 total_adult_patients_hospitalized_confirmed_covid_7_day_coverage, total_adult_patients_hospitalized_confirmed_covid_7_day_sum, total_adult_patients_hospitalized_confirmed_covid_7_day_avg,
 inpatient_beds_used_covid_7_day_coverage, inpatient_beds_used_covid_7_day_sum, inpatient_beds_used_covid_7_day_avg) %>% 
-  arrange(desc(collection_week)) 
+  arrange(collection_week)
+
+# Below a table of the first few rows of the data frame called final is shown (note that not
+# all columns are shown here)
 knitr::kable(head(final))
 
-### Below is good, keep below. Below is for average
+###----------------- below is for average
+
+# The dot plots below are of each state for the 7 day average each week from 2020-04-10 to 2023-02-10
+# for total pediatric patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg)) +
-  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
-
+# The bar graphs below are of each state for the 7 day average each week from 2020-04-10 to 2023-02-10
+# for total pediatric patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The dot plots below are of each state for the 7 day average each week from 2020-04-10 to 2023-02-10
+# for total adult patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_avg)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day average each week from 2020-04-10 to 2023-02-10
+# for total adult patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_avg)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The dot plots below are of each state for the 7 day average each week from 2020-04-10 to 2023-02-10
+# for total amoutn of inpatients with COVID hospitalized.
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_avg)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day average each week from 2020-04-10 to 2023-02-10
+# for total amoutn of inpatients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_avg)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ###----------------- below is for coverage
 
+# The dot plots below are of each state for the 7 day coverage each week from 2020-04-10 to 2023-02-10
+# for total pediatric patients with COVID hospitalized.
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day coverage each week from 2020-04-10 to 2023-02-10
+# for total pediatric patients with COVID hospitalized.
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The dot plots below are of each state for the 7 day coverage each week from 2020-04-10 to 2023-02-10
+# for total adult patients with COVID hospitalized.
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_coverage)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day coverage each week from 2020-04-10 to 2023-02-10
+# for total adult patients with COVID hospitalized.
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_coverage)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The dot plots below are of each state for the 7 day coverage each week from 2020-04-10 to 2023-02-10
+# for total amoutn of inpatients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_coverage)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day coverage each week from 2020-04-10 to 2023-02-10
+# for total amoutn of inpatients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_coverage)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-###--------------------below is for sum: 
+###-------------------- below is for sum 
 
+# The dot plots below are of each state for the 7 day sum each week from 2020-04-10 to 2023-02-10
+# for total pediatric patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day sum each week from 2020-04-10 to 2023-02-10
+# for total pediatric patients with COVID hospitalized.
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The dot plots below are of each state for the 7 day sum each week from 2020-04-10 to 2023-02-10
+# for total adult patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_sum)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day sum each week from 2020-04-10 to 2023-02-10
+# for total adult patients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_sum)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The dot plots below are of each state for the 7 day sum each week from 2020-04-10 to 2023-02-10
+# for total amoutn of inpatients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_point(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_sum)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+# The bar graphs below are of each state for the 7 day sum each week from 2020-04-10 to 2023-02-10
+# for total amoutn of inpatients with COVID hospitalized. 
 ggplot(data = final, mapping = aes(col = hospital_subtype)) +
   geom_col(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_sum)) +
   facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
-
