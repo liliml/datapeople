@@ -1,0 +1,126 @@
+---
+title: "covidData"
+author: "Data People"
+date: "`r Sys.Date()`"
+output: html_document
+---
+---
+title: "Datathon"
+author: "Data People"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+### What trends do you notice with respect to the total inpatient beds for COVID by specific age groups and time? 
+```{r}
+library(tidyverse)
+fullData <- read_delim("COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_Facility.csv")
+head(fullData)
+
+#smaller data set below with only 10000 rows
+size10000 <- sample_n(fullData, 10000)
+head(size10000)
+
+final <- size10000 %>% 
+  filter(total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg >= 0 & total_adult_patients_hospitalized_confirmed_covid_7_day_avg >= 0 & inpatient_beds_used_covid_7_day_avg >= 0 & 
+total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum >= 0 & total_adult_patients_hospitalized_confirmed_covid_7_day_sum >= 0 & inpatient_beds_used_covid_7_day_sum >= 0) %>% 
+  select(collection_week, hospital_subtype, state, city, 
+total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage, total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum, total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg,     
+total_adult_patients_hospitalized_confirmed_covid_7_day_coverage, total_adult_patients_hospitalized_confirmed_covid_7_day_sum, total_adult_patients_hospitalized_confirmed_covid_7_day_avg,
+inpatient_beds_used_covid_7_day_coverage, inpatient_beds_used_covid_7_day_sum, inpatient_beds_used_covid_7_day_avg) %>% 
+  arrange(desc(collection_week)) 
+knitr::kable(head(final))
+
+### Below is good, keep below. Below is for average
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_avg)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_avg)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_avg)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_avg)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_avg)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+###----------------- below is for coverage
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_coverage)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_coverage)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_coverage)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_coverage)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_coverage)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+###--------------------below is for sum: 
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = total_pediatric_patients_hospitalized_confirmed_covid_7_day_sum)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_sum)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = total_adult_patients_hospitalized_confirmed_covid_7_day_sum)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_point(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_sum)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+ggplot(data = final, mapping = aes(col = hospital_subtype)) +
+  geom_col(mapping = aes(x = collection_week, y = inpatient_beds_used_covid_7_day_sum)) +
+  facet_wrap(~state) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
